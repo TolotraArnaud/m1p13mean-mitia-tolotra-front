@@ -1,0 +1,18 @@
+<div class="hero">
+  <div class="hero-content">
+    <h1>Bienvenue au Digital Mall</h1>
+    <p>Découvrez toutes les boutiques et services du centre commercial.</p>
+    <button routerLink="/login">Se connecter</button>
+  </div>
+</div>
+
+<section class="featured">
+  <h2>Boutiques en vedette</h2>
+  <div class="cards">
+    <div class="card" *ngFor="let i of [1,2,3,4]">
+      <div class="image-placeholder"></div>
+      <h3>Nom Boutique</h3>
+      <p>Catégorie</p>
+    </div>
+  </div>
+</section>
