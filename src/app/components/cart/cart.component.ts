@@ -55,7 +55,7 @@ export class CartComponent implements OnInit {
     for (const group of groups) {
       const payload = {
         shopId: group.shopId,
-        type: this.bookingType,
+        type: "collect",
         items: group.items.map(i => ({
           product: i.product._id!,
           quantity: i.quantity
