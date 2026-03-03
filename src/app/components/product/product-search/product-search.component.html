@@ -36,16 +36,6 @@
           </select>
         </div>
 
-        <!-- Tri -->
-        <div class="col-12 col-md-2">
-          <label class="form-label small fw-semibold text-muted">Trier par</label>
-          <select class="form-select" [(ngModel)]="filters.sortBy">
-            <option value="newest">Plus récents</option>
-            <option value="price_asc">Prix ↑</option>
-            <option value="price_desc">Prix ↓</option>
-          </select>
-        </div>
-
         <!-- Actions -->
         <div class="col-12 col-md-1 d-flex gap-2">
           <button class="btn btn-primary flex-fill" (click)="search()" title="Rechercher">

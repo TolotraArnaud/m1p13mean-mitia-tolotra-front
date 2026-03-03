@@ -11,7 +11,7 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
-  credentials = { email: '', password: '' };
+  credentials = { email: 'admin@mail.mg', password: 'Admin123!' };
   error = '';
   loading = false;
 
