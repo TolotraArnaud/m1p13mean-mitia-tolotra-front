@@ -1,0 +1,74 @@
+<!-- HERO SECTION -->
+<section class="hero-section bg-primary text-white py-5">
+  <div class="container py-4">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-3">Découvrez nos boutiques</h1>
+        <p class="lead mb-4 opacity-75">Explorez des milliers de produits proposés par nos commerçants partenaires.</p>
+        <div class="d-flex gap-3">
+          <a routerLink="/shops" class="btn btn-light btn-lg fw-semibold px-4">
+            <i class="bi bi-grid me-2"></i>Voir les boutiques
+          </a>
+          <a routerLink="/products/search" class="btn btn-outline-light btn-lg px-4">
+            <i class="bi bi-search me-2"></i>Rechercher
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6 text-center d-none d-lg-block">
+        <i class="bi bi-shop" style="font-size: 10rem; opacity: 0.2;"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED SHOPS -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0"><i class="bi bi-grid me-2 text-primary"></i>Nos Boutiques</h2>
+      <a routerLink="/shops" class="btn btn-outline-primary btn-sm">Voir tout</a>
+    </div>
+    <div class="row g-4">
+      @for (shop of allShops; track shop._id) {
+        <div class="col-md-6 col-lg-4">
+          <app-shop-card [shop]="shop"></app-shop-card>
+        </div>
+      }
+      @if (allShops.length === 0) {
+        <div class="col-12 text-center text-muted py-4">
+          <i class="bi bi-shop display-4 d-block mb-2"></i>
+          Aucune boutique disponible.
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- LATEST PRODUCTS -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0"><i class="bi bi-stars me-2 text-warning"></i>Nouveautés</h2>
+      <a routerLink="/products/search" class="btn btn-outline-primary btn-sm">Voir tout</a>
+    </div>
+    @if (loading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+    } @else {
+      <div class="row g-4">
+        @for (product of latestProducts; track product._id) {
+          <div class="col-6 col-md-4 col-lg-3">
+            <app-product-card [product]="product"></app-product-card>
+          </div>
+        }
+        @if (latestProducts.length === 0) {
+          <div class="col-12 text-center text-muted py-4">
+            <i class="bi bi-box-seam display-4 d-block mb-2"></i>
+            Aucun produit disponible.
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

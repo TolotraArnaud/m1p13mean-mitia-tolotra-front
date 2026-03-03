@@ -1,0 +1,53 @@
+<div class="bg-light min-vh-100 py-5">
+  <div class="container">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5">
+      <div>
+        <h1 class="fw-bold mb-1"><i class="bi bi-grid me-2 text-primary"></i>Toutes les boutiques</h1>
+        <p class="text-muted mb-0">{{ filteredShops.length }} boutique(s) disponible(s)</p>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5">
+      <div class="card-body p-4">
+        <div class="input-group input-group-lg">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input
+            type="text"
+            class="form-control border-start-0 ps-0"
+            placeholder="Rechercher une boutique..."
+            [(ngModel)]="searchTerm"
+            (input)="filterShops()"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (loading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="text-muted mt-3">Chargement des boutiques...</p>
+      </div>
+    } @else {
+      <!-- Grid -->
+      <div class="row g-4">
+        @for (shop of filteredShops; track shop._id) {
+          <div class="col-md-6 col-lg-4">
+            <app-shop-card [shop]="shop"></app-shop-card>
+          </div>
+        }
+        @if (filteredShops.length === 0) {
+          <div class="col-12">
+            <div class="text-center py-5 text-muted">
+              <i class="bi bi-shop-window display-3 d-block mb-3"></i>
+              <h5>Aucune boutique trouvée</h5>
+              <p class="small">Essayez un autre terme de recherche.</p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

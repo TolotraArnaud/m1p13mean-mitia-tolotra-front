@@ -1,0 +1,99 @@
+<div class="bg-light min-vh-100 py-5">
+  <div class="container" style="max-width:900px">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a routerLink="/home" class="btn btn-sm btn-outline-secondary rounded-3">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <h1 class="fw-bold mb-0" style="font-size:1.6rem">
+        <i class="bi bi-receipt me-2" style="color:var(--em-600)"></i>
+        Mes réservations
+      </h1>
+    </div>
+
+    @if (loading) {
+      <div class="text-center py-5"><div class="spinner-border" style="color:var(--em-600)"></div></div>
+    } @else if (error) {
+      <div class="alert alert-danger rounded-3">{{ error }}</div>
+    } @else if (bookings.length === 0) {
+      <div class="card border-0 text-center py-5">
+        <i class="bi bi-receipt d-block mb-3" style="font-size:4rem;color:var(--gray-300)"></i>
+        <h5 class="text-muted">Aucune réservation pour le moment</h5>
+        <a routerLink="/products/search" class="btn btn-primary mt-3 rounded-3">
+          Parcourir les produits
+        </a>
+      </div>
+    } @else {
+      <div class="d-flex flex-column gap-3">
+        @for (booking of bookings; track booking._id) {
+          <div class="card border-0">
+            <div class="card-body p-4">
+
+              <!-- Header boutique + code -->
+              <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+                <div>
+                  <h6 class="fw-bold mb-1">
+                    <i class="bi bi-shop me-2" style="color:var(--em-600)"></i>
+                    {{ getShopName(booking) }}
+                  </h6>
+                  <small class="text-muted">
+                    {{ booking.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                    &nbsp;·&nbsp;
+                    {{ booking.type === 'collect' ? 'Retrait sur place' : 'Essayage' }}
+                  </small>
+                </div>
+                <div class="text-end">
+                  <span class="dash-badge" [ngClass]="statusLabel(booking.status).cls">
+                    {{ statusLabel(booking.status).text }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Code de retrait -->
+              @if (booking.status === 'pending' || booking.status === 'confirmed') {
+                <div class="p-3 rounded-3 mb-3 text-center"
+                     style="background:var(--em-50);border:2px dashed var(--em-600)">
+                  <div class="text-muted small mb-1">Code de retrait</div>
+                  <div class="fw-bold" style="font-size:1.5rem;letter-spacing:.15em;color:var(--em-700)">
+                    {{ booking.pickupCode }}
+                  </div>
+                  <div class="text-muted small mt-1">
+                    Expire le {{ booking.expiresAt | date:'dd/MM/yyyy HH:mm' }}
+                  </div>
+                </div>
+              }
+
+              <!-- Articles -->
+              <div class="table-responsive">
+                <table class="table table-sm table-borderless mb-0">
+                  <thead>
+                    <tr class="text-muted small">
+                      <th>Produit</th>
+                      <th class="text-center">Qté</th>
+                      <th class="text-end">Prix</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of booking.items; track $index) {
+                      <tr>
+                        <td>{{ item.name || 'Produit' }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">{{ (item.prix || 0) * item.quantity | number:'1.0-0' }} Ar</td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot>
+                    <tr class="fw-bold border-top">
+                      <td colspan="2">Total</td>
+                      <td class="text-end" style="color:var(--em-600)">{{ getTotal(booking) | number:'1.0-0' }} Ar</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

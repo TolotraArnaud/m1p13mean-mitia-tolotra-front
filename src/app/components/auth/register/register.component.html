@@ -1,0 +1,73 @@
+<div class="min-vh-100 bg-light d-flex align-items-center py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card shadow border-0 rounded-4">
+          <div class="card-body p-5">
+            <div class="text-center mb-4">
+              <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px">
+                <i class="bi bi-person-plus fs-4"></i>
+              </div>
+              <h2 class="fw-bold">Créer un compte</h2>
+              <p class="text-muted small">Rejoignez notre marketplace</p>
+            </div>
+
+            @if (error) {
+              <div class="alert alert-danger small rounded-3 py-2">
+                <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
+              </div>
+            }
+            @if (success) {
+              <div class="alert alert-success small rounded-3 py-2">
+                <i class="bi bi-check-circle me-2"></i>{{ success }}
+              </div>
+            }
+
+            <form (ngSubmit)="register()" #registerForm="ngForm">
+              <div class="row g-3 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-semibold small">Prénom</label>
+                  <input type="text" class="form-control" placeholder="Jean" name="prenom"
+                    [(ngModel)]="form.prenom" required />
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold small">Nom</label>
+                  <input type="text" class="form-control" placeholder="Dupont" name="nom"
+                    [(ngModel)]="form.nom" required />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold small">Email</label>
+                <input type="email" class="form-control" placeholder="vous@exemple.com" name="email"
+                  [(ngModel)]="form.email" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold small">Mot de passe</label>
+                <input type="password" class="form-control" placeholder="••••••••" name="password"
+                  [(ngModel)]="form.password" required minlength="6" />
+              </div>
+              <div class="mb-4">
+                <label class="form-label fw-semibold small">Je suis...</label>
+                <select class="form-select" name="role" [(ngModel)]="form.role">
+                  <option value="client">Client</option>
+                  <option value="boutique">Commerçant (Boutique)</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-success w-100 py-2 fw-semibold"
+                [disabled]="registerForm.invalid || loading">
+                @if (loading) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                Créer mon compte
+              </button>
+            </form>
+
+            <hr class="my-4">
+            <p class="text-center text-muted small mb-0">
+              Déjà inscrit ?
+              <a routerLink="/login" class="text-primary fw-semibold text-decoration-none">Se connecter</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

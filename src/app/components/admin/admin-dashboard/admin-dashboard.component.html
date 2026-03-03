@@ -1,0 +1,60 @@
+<div class="dash-page">
+  <div class="dash-page__header">
+    <div>
+      <h1>Tableau de bord</h1>
+      <p>Vue d'ensemble de la plateforme</p>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="dash-loading"><div class="spinner-border text-primary"></div></div>
+  } @else if (stats) {
+
+    <div class="dash-stats-grid">
+      <div class="dash-stat">
+        <div class="dash-stat__icon dash-stat__icon--blue"><i class="bi bi-people"></i></div>
+        <div class="dash-stat__value">{{ stats.users }}</div>
+        <div class="dash-stat__label">Utilisateurs</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat__icon dash-stat__icon--green"><i class="bi bi-shop"></i></div>
+        <div class="dash-stat__value">{{ stats.shops }}</div>
+        <div class="dash-stat__label">Boutiques</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat__icon dash-stat__icon--amber"><i class="bi bi-box-seam"></i></div>
+        <div class="dash-stat__value">{{ stats.products }}</div>
+        <div class="dash-stat__label">Produits</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat__icon dash-stat__icon--teal"><i class="bi bi-currency-euro"></i></div>
+        <div class="dash-stat__value">{{ stats.platformValue | number:'1.0-0' }} Ar</div>
+        <div class="dash-stat__label">Valeur stock totale</div>
+      </div>
+    </div>
+
+    <div class="dash-summary-row">
+      <div class="dash-summary-card">
+        <div class="dash-summary-card__num">{{ stats.averageProductsPerShop }}</div>
+        <div class="dash-summary-card__lbl">Produits moyens / boutique</div>
+      </div>
+      <div class="dash-summary-card">
+        <div class="dash-summary-card__num">{{ stats.shops }}</div>
+        <div class="dash-summary-card__lbl">Boutiques enregistrées</div>
+      </div>
+    </div>
+
+    <div class="dash-quicklinks">
+      <a routerLink="/admin/shops" class="dash-quicklink">
+        <i class="bi bi-shop"></i>
+        <span>Gérer les boutiques</span>
+        <i class="bi bi-arrow-right ms-auto"></i>
+      </a>
+      <a routerLink="/admin/categories" class="dash-quicklink">
+        <i class="bi bi-tags"></i>
+        <span>Gérer les catégories</span>
+        <i class="bi bi-arrow-right ms-auto"></i>
+      </a>
+    </div>
+  }
+</div>

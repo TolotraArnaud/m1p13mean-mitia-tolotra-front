@@ -1,0 +1,133 @@
+<div class="bg-light min-vh-100 py-5">
+  <div class="container">
+    <a routerLink="/products/search" class="btn btn-outline-secondary btn-sm rounded-3 mb-4">
+      <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+
+    @if (loading) {
+      <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    } @else if (!product) {
+      <div class="alert alert-warning rounded-4">Produit introuvable.</div>
+    } @else {
+
+      @if (successMsg) {
+        <div class="alert alert-success small rounded-4 mb-4"><i class="bi bi-check-circle me-2"></i>{{ successMsg }}</div>
+      }
+      @if (errorMsg) {
+        <div class="alert alert-danger small rounded-4 mb-4"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMsg }}</div>
+      }
+
+      <div class="row g-5">
+        <!-- Image -->
+        <div class="col-md-5">
+          <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            @if (product.image) {
+              <img [src]="product.image" [alt]="product.nom" class="img-fluid" style="max-height:400px;object-fit:contain;padding:1rem" />
+            } @else {
+              <div class="d-flex align-items-center justify-content-center text-muted" style="height:300px;background:#f8f9fa">
+                <i class="bi bi-image" style="font-size:5rem"></i>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Details / Edit -->
+        <div class="col-md-7">
+          @if (!editMode) {
+            <div class="d-flex align-items-start justify-content-between mb-3">
+              <div>
+                <h1 class="fw-bold mb-1">{{ product.nom }}</h1>
+                @if (getShopName()) {
+                  <p class="text-muted mb-0"><i class="bi bi-shop me-1"></i>{{ getShopName() }}</p>
+                }
+              </div>
+              @if (product.popular) {
+                <span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-star-fill me-1"></i>Populaire</span>
+              }
+            </div>
+
+            <div class="mb-4">
+              @if (product.promo && product.promo > 0) {
+                <div class="d-flex align-items-center gap-3">
+                  <span class="display-6 fw-bold text-danger">{{ getDiscountedPrice() | number:'1.0-0' }} Ar</span>
+                  <div>
+                    <span class="text-muted text-decoration-line-through">{{ product.prix | number:'1.0-0' }} Ar</span>
+                    <span class="badge bg-danger ms-2">-{{ product.promo }}%</span>
+                  </div>
+                </div>
+              } @else {
+                <span class="display-6 fw-bold text-primary">{{ product.prix | number:'1.0-0' }} Ar</span>
+              }
+            </div>
+
+            @if (product.description) {
+              <p class="text-muted mb-4">{{ product.description }}</p>
+            }
+
+            <div class="row g-3 mb-4">
+              <div class="col-6">
+                <div class="p-3 bg-white rounded-3 shadow-sm text-center">
+                  <small class="text-muted d-block">Disponibilité</small>
+                  <span class="fw-bold" [ngClass]="product.isAvailable ? 'text-success' : 'text-danger'">
+                    <i class="bi me-1" [class.bi-check-circle]="product.isAvailable" [class.bi-x-circle]="!product.isAvailable"></i>
+                    {{ product.isAvailable ? 'Disponible' : 'Indisponible' }}
+                  </span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 bg-white rounded-3 shadow-sm text-center">
+                  <small class="text-muted d-block">Poids</small>
+                  <span class="fw-bold">{{ product.poid || 0 }} kg</span>
+                </div>
+              </div>
+            </div>
+
+            @if (authService.isAdmin() || canEditProduct()) {
+              <button class="btn btn-outline-primary rounded-3" (click)="enterEdit()">
+                <i class="bi bi-pencil me-2"></i>Modifier ce produit
+              </button>
+            }
+
+          } @else {
+            <!-- EDIT FORM -->
+            <h4 class="fw-bold mb-4"><i class="bi bi-pencil me-2 text-primary"></i>Modifier le produit</h4>
+            <form (ngSubmit)="saveEdit()" #editForm2="ngForm">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Nom</label>
+                  <input type="text" class="form-control" [(ngModel)]="editForm.nom" name="eNom" required />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Prix (Ar)</label>
+                  <input type="number" class="form-control" [(ngModel)]="editForm.prix" name="ePrix" min="0" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Stock</label>
+                  <input type="number" class="form-control" [(ngModel)]="editForm.stock" name="eStock" min="0" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Promo (%)</label>
+                  <input type="number" class="form-control" [(ngModel)]="editForm.promo" name="ePromo" min="0" max="100" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Description</label>
+                  <textarea class="form-control" rows="3" [(ngModel)]="editForm.description" name="eDesc"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">Nouvelle image</label>
+                  <input type="file" class="form-control" accept="image/*" (change)="onFileChange($event)" />
+                </div>
+                <div class="col-12 d-flex gap-2 justify-content-end">
+                  <button type="button" class="btn btn-outline-secondary" (click)="editMode=false">Annuler</button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check me-1"></i>Enregistrer
+                  </button>
+                </div>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,148 @@
+<div class="dash-page">
+  <div class="dash-page__header">
+    <div>
+      <h1>Boutiques</h1>
+      <p>{{ allShops.length }} boutique(s) enregistrées</p>
+    </div>
+  </div>
+
+  @if (successMsg) {
+    <div class="dash-alert dash-alert--success"><i class="bi bi-check-circle"></i> {{ successMsg }}</div>
+  }
+  @if (errorMsg) {
+    <div class="dash-alert dash-alert--error"><i class="bi bi-exclamation-circle"></i> {{ errorMsg }}</div>
+  }
+
+  <!-- Edit modal inline -->
+  @if (editingShop) {
+    <div class="dash-form-card">
+      <h6 class="dash-form-card__title">
+        <i class="bi bi-pencil"></i> Modifier — {{ editingShop.nom }}
+      </h6>
+      <div class="dash-form-row">
+        <div class="dash-field" style="flex:2">
+          <label>Nom</label>
+          <input type="text" [(ngModel)]="editForm.nom" />
+        </div>
+        <div class="dash-field" style="flex:3">
+          <label>Description</label>
+          <input type="text" [(ngModel)]="editForm.description" />
+        </div>
+        <div class="dash-form-actions">
+          <button class="dash-btn dash-btn--primary" (click)="saveEdit()" [disabled]="!editForm.nom">
+            <i class="bi bi-check"></i> Sauvegarder
+          </button>
+          <button class="dash-btn dash-btn--ghost" (click)="cancelEdit()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="dash-filters">
+    <div class="dash-filters__pills">
+      <button [class.active]="filter==='all'"     (click)="filter='all'; page=1">Toutes ({{ allShops.length }})</button>
+      <button [class.active]="filter==='active'"  (click)="filter='active'; page=1">
+        <i class="bi bi-check-circle"></i> Actives ({{ activeCount }})
+      </button>
+      <button [class.active]="filter==='pending'" (click)="filter='pending'; page=1" class="pill-warn">
+        <i class="bi bi-clock"></i> En attente ({{ pendingCount }})
+      </button>
+    </div>
+    <div class="dash-filters__search">
+      <i class="bi bi-search"></i>
+      <input type="text" placeholder="Rechercher..." [(ngModel)]="search" />
+    </div>
+  </div>
+
+  <!-- Table -->
+  @if (loading) {
+    <div class="dash-loading"><div class="spinner-border text-primary"></div></div>
+  } @else {
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Boutique</th>
+            <th>Catégorie</th>
+            <th>Propriétaire</th>
+            <th>Statut</th>
+            <th class="text-end" style="padding-right:1.25rem">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (shop of paged; track shop._id) {
+            <tr>
+              <td>
+                <div class="dash-table__shop-cell">
+                  <div class="dash-table__initials">{{ shop.nom.substring(0,2).toUpperCase() }}</div>
+                  <div>
+                    <div class="fw-semibold">{{ shop.nom }}</div>
+                    @if (shop.description) {
+                      <div class="text-muted" style="font-size:.75rem;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                        {{ shop.description }}
+                      </div>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td><span class="dash-badge dash-badge--blue">{{ catName(shop) }}</span></td>
+              <td class="text-muted small">{{ ownerName(shop) }}</td>
+              <td>
+                <span class="dash-badge"
+                  [ngClass]="shop.isActivated ? 'dash-badge--green' : 'dash-badge--amber'">
+                  <i class="bi" [class.bi-check-circle]="shop.isActivated" [class.bi-clock]="!shop.isActivated"></i>
+                  {{ shop.isActivated ? 'Active' : 'En attente' }}
+                </span>
+              </td>
+              <td class="text-end" style="padding-right:1rem">
+                <div class="dash-action-group">
+                  <!-- Valider si en attente -->
+                  @if (!shop.isActivated) {
+                    <button class="dash-btn dash-btn--sm dash-btn--success" (click)="activate(shop)">
+                      <i class="bi bi-check-lg"></i> Valider
+                    </button>
+                  }
+                  <!-- Modifier -->
+                  <button class="dash-btn dash-btn--sm dash-btn--outline" (click)="startEdit(shop)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <!-- Voir produits -->
+                  <a [routerLink]="['/shops', shop._id, 'products']"
+                     class="dash-btn dash-btn--sm dash-btn--ghost">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          }
+          @if (filtered.length === 0) {
+            <tr>
+              <td colspan="5" class="dash-empty">
+                <i class="bi bi-shop-window"></i>
+                <span>Aucune boutique trouvée</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="dash-pagination mt-3">
+        <button class="dash-page-btn" [disabled]="page === 1" (click)="page = page - 1">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        @for (p of pages; track p) {
+          <button class="dash-page-btn" [class.active]="p === page" (click)="page = p">{{ p }}</button>
+        }
+        <button class="dash-page-btn" [disabled]="page === totalPages" (click)="page = page + 1">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    }
+    <div class="text-muted mt-2" style="font-size:.75rem">
+      {{ (page-1)*pageSize + 1 }}–{{ page*pageSize < filtered.length ? page*pageSize : filtered.length }} sur {{ filtered.length }} résultat(s)
+    </div>
+  }
+</div>

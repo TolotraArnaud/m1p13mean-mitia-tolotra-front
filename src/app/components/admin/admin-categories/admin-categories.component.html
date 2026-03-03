@@ -1,0 +1,171 @@
+<div class="dash-page">
+  <div class="dash-page__header">
+    <div>
+      <h1>Catégories</h1>
+      <p>{{ allCategories.length }} catégorie(s) — {{ validatedCount }} validée(s), {{ pendingCount }} en attente</p>
+    </div>
+    <button class="dash-btn dash-btn--primary" (click)="showForm = !showForm; editingCat = null">
+      <i class="bi bi-plus"></i> Nouvelle catégorie
+    </button>
+  </div>
+
+  @if (successMsg) {
+    <div class="dash-alert dash-alert--success"><i class="bi bi-check-circle"></i> {{ successMsg }}</div>
+  }
+  @if (errorMsg) {
+    <div class="dash-alert dash-alert--error"><i class="bi bi-exclamation-circle"></i> {{ errorMsg }}</div>
+  }
+
+  <!-- Création -->
+  @if (showForm) {
+    <div class="dash-form-card">
+      <h6 class="dash-form-card__title"><i class="bi bi-plus-circle"></i> Créer une catégorie</h6>
+      <form (ngSubmit)="createCat()" #catForm="ngForm" class="dash-form-row">
+        <div class="dash-field">
+          <label>Nom *</label>
+          <input type="text" placeholder="Ex: Électronique" name="nom" [(ngModel)]="newCat.nom" required />
+        </div>
+        <div class="dash-field">
+          <label>Type</label>
+          <select name="type" [(ngModel)]="newCat.type">
+            <option value="shop">Boutique (shop)</option>
+            <option value="product">Produit (product)</option>
+          </select>
+        </div>
+        <div class="dash-form-actions">
+          <button type="submit" class="dash-btn dash-btn--primary" [disabled]="catForm.invalid">Créer</button>
+          <button type="button" class="dash-btn dash-btn--ghost" (click)="showForm=false">Annuler</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Edition inline -->
+  @if (editingCat) {
+    <div class="dash-form-card" style="border-left-color:var(--amber-500) !important">
+      <h6 class="dash-form-card__title" style="color:var(--amber-700)">
+        <i class="bi bi-pencil"></i> Modifier — {{ editingCat.nom }}
+      </h6>
+      <div class="dash-form-row">
+        <div class="dash-field">
+          <label>Nom</label>
+          <input type="text" [(ngModel)]="editForm.nom" required />
+        </div>
+        <div class="dash-field">
+          <label>Type</label>
+          <select [(ngModel)]="editForm.type">
+            <option value="shop">Boutique (shop)</option>
+            <option value="product">Produit (product)</option>
+          </select>
+        </div>
+        <div class="dash-form-actions">
+          <button class="dash-btn dash-btn--primary" (click)="saveEdit()" [disabled]="!editForm.nom">
+            <i class="bi bi-check"></i> Sauvegarder
+          </button>
+          <button class="dash-btn dash-btn--ghost" (click)="cancelEdit()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Filtres -->
+  <div class="dash-filters">
+    <div class="dash-filters__pills">
+      <button [class.active]="filterStatus==='all'"       (click)="filterStatus='all'; page=1">Toutes ({{ allCategories.length }})</button>
+      <button [class.active]="filterStatus==='validated'" (click)="filterStatus='validated'; page=1">
+        <i class="bi bi-check-circle"></i> Validées ({{ validatedCount }})
+      </button>
+      <button [class.active]="filterStatus==='pending'"   (click)="filterStatus='pending'; page=1" class="pill-warn">
+        <i class="bi bi-clock"></i> En attente ({{ pendingCount }})
+      </button>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <div class="dash-filters__search">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Rechercher..." [(ngModel)]="search" (ngModelChange)="page=1" />
+      </div>
+      <select class="form-select form-select-sm" style="width:auto" [(ngModel)]="filterType" (ngModelChange)="page=1">
+        <option value="all">Tous types</option>
+        <option value="shop">Shop</option>
+        <option value="product">Product</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table -->
+  @if (loading) {
+    <div class="dash-loading"><div class="spinner-border text-primary"></div></div>
+  } @else if (filtered.length === 0) {
+    <div class="dash-empty-state">
+      <i class="bi bi-tags"></i>
+      <span>Aucune catégorie trouvée.</span>
+    </div>
+  } @else {
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Type</th>
+            <th>Statut</th>
+            <th class="text-end" style="padding-right:1.25rem">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cat of paged; track cat._id) {
+            <tr>
+              <td class="fw-semibold">{{ cat.nom }}</td>
+              <td>
+                <span class="dash-badge" [ngClass]="cat.type==='shop' ? 'dash-badge--blue' : 'dash-badge--slate'">
+                  <i class="bi" [class.bi-shop]="cat.type==='shop'" [class.bi-box]="cat.type==='product'"></i>
+                  {{ cat.type }}
+                </span>
+              </td>
+              <td>
+                <span class="dash-badge" [ngClass]="cat.isValidated ? 'dash-badge--green' : 'dash-badge--amber'">
+                  <i class="bi" [class.bi-check-circle]="cat.isValidated" [class.bi-clock]="!cat.isValidated"></i>
+                  {{ cat.isValidated ? 'Validée' : 'En attente' }}
+                </span>
+              </td>
+              <td class="text-end" style="padding-right:1rem">
+                <div class="dash-action-group">
+                  @if (!cat.isValidated) {
+                    <button class="dash-btn dash-btn--sm dash-btn--success" (click)="decide(cat._id!, 'accept')">
+                      <i class="bi bi-check"></i> Valider
+                    </button>
+                  }
+                  <button class="dash-btn dash-btn--sm dash-btn--outline" (click)="startEdit(cat)" title="Modifier">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  @if (!cat.isValidated) {
+                    <button class="dash-btn dash-btn--sm dash-btn--danger-outline" (click)="decide(cat._id!, 'reject')" title="Supprimer">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1) {
+      <div class="dash-pagination mt-3">
+        <button class="dash-page-btn" [disabled]="page === 1" (click)="page = page - 1">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        @for (p of pages; track p) {
+          <button class="dash-page-btn" [class.active]="p === page" (click)="page = p">{{ p }}</button>
+        }
+        <button class="dash-page-btn" [disabled]="page === totalPages" (click)="page = page + 1">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    }
+    <div class="text-muted mt-2" style="font-size:.75rem">
+      {{ (page-1)*pageSize + 1 }}–{{ page*pageSize < filtered.length ? page*pageSize : filtered.length }} sur {{ filtered.length }} résultat(s)
+    </div>
+  }
+</div>

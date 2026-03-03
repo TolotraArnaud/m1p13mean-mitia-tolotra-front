@@ -1,0 +1,91 @@
+<div class="bg-light min-vh-100 py-5">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <h1 class="fw-bold"><i class="bi bi-search me-2 text-primary"></i>Rechercher des produits</h1>
+    </div>
+
+    <!-- Search bar + filters inline -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 p-4">
+      <div class="row g-3 align-items-end">
+
+        <!-- Mot-clé -->
+        <div class="col-12 col-md-5">
+          <label class="form-label small fw-semibold text-muted">Recherche</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input
+              type="text"
+              class="form-control border-start-0 ps-0"
+              placeholder="Nom du produit..."
+              [(ngModel)]="filters.keyword"
+              (keyup.enter)="search()"
+            />
+          </div>
+        </div>
+
+        <!-- Catégorie -->
+        <div class="col-12 col-md-4">
+          <label class="form-label small fw-semibold text-muted">Catégorie</label>
+          <select class="form-select" [(ngModel)]="filters.categoryId">
+            <option value="">Toutes les catégories</option>
+            @for (cat of categories; track cat._id) {
+              <option [value]="cat._id">{{ cat.nom }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Tri -->
+        <div class="col-12 col-md-2">
+          <label class="form-label small fw-semibold text-muted">Trier par</label>
+          <select class="form-select" [(ngModel)]="filters.sortBy">
+            <option value="newest">Plus récents</option>
+            <option value="price_asc">Prix ↑</option>
+            <option value="price_desc">Prix ↓</option>
+          </select>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 col-md-1 d-flex gap-2">
+          <button class="btn btn-primary flex-fill" (click)="search()" title="Rechercher">
+            <i class="bi bi-search"></i>
+          </button>
+          <button class="btn btn-outline-secondary" (click)="reset()" title="Réinitialiser">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results count -->
+    <p class="text-muted small mb-4">
+      <span class="fw-bold text-dark">{{ count }}</span> produit(s) trouvé(s)
+    </p>
+
+    <!-- Results grid -->
+    @if (loading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="text-muted mt-3">Chargement...</p>
+      </div>
+    } @else {
+      <div class="row g-4">
+        @for (product of products; track product._id) {
+          <div class="col-6 col-md-4 col-lg-3">
+            <app-product-card [product]="product"></app-product-card>
+          </div>
+        }
+        @if (products.length === 0) {
+          <div class="col-12 text-center text-muted py-5">
+            <i class="bi bi-box-seam display-3 d-block mb-3 opacity-25"></i>
+            <h5>Aucun produit trouvé</h5>
+            <p class="small">Essayez un autre mot-clé ou une autre catégorie.</p>
+            <button class="btn btn-outline-primary btn-sm" (click)="reset()">Réinitialiser</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+

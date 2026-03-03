@@ -1,0 +1,153 @@
+<div class="dash-page">
+  <div class="dash-page__header">
+    <div>
+      <h1>Réservations</h1>
+      <p>Gérez les réservations de vos boutiques</p>
+    </div>
+  </div>
+
+  @if (successMsg) {
+    <div class="dash-alert dash-alert--success"><i class="bi bi-check-circle"></i> {{ successMsg }}</div>
+  }
+  @if (errorMsg) {
+    <div class="dash-alert dash-alert--error"><i class="bi bi-exclamation-circle"></i> {{ errorMsg }}</div>
+  }
+
+  <!-- Sélection boutique -->
+  @if (myShops.length > 1) {
+    <div class="dash-form-card mb-4">
+      <div class="dash-field" style="max-width:320px">
+        <label>Boutique</label>
+        <select [(ngModel)]="selectedShopId" (ngModelChange)="onShopChange()">
+          @for (shop of myShops; track shop._id) {
+            <option [value]="shop._id">{{ shop.nom }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  }
+
+  <!-- Zone validation code -->
+  <div class="dash-form-card" style="border-left-color:var(--em-600) !important">
+    <h6 class="dash-form-card__title">
+      <i class="bi bi-qr-code-scan"></i> Valider un retrait
+    </h6>
+    <div class="dash-form-row">
+      <div class="dash-field" style="flex:2">
+        <label>Code de retrait client</label>
+        <input type="text" [(ngModel)]="pickupCode" placeholder="Ex: MT-AB12CD"
+               style="text-transform:uppercase;letter-spacing:.1em;font-size:1.1rem;font-weight:700"
+               (keyup.enter)="validateCode()" />
+      </div>
+      <div class="dash-form-actions">
+        <button class="dash-btn dash-btn--success" (click)="validateCode()"
+                [disabled]="!pickupCode || validateLoading">
+          @if (validateLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          <i class="bi bi-check-lg"></i> Valider
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste réservations en attente -->
+  <h6 class="fw-bold mt-4 mb-2" style="color:var(--gray-700)">
+    En attente
+    <span class="dash-badge dash-badge--amber ms-2">{{ pending.length }}</span>
+  </h6>
+
+  @if (loading) {
+    <div class="dash-loading"><div class="spinner-border text-primary"></div></div>
+  } @else if (pending.length === 0) {
+    <div class="dash-empty-state">
+      <i class="bi bi-check2-all"></i>
+      <span>Aucune réservation en attente</span>
+    </div>
+  } @else {
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Client</th>
+            <th>Articles</th>
+            <th>Type</th>
+            <th>Total</th>
+            <th>Expire le</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of paged; track b._id) {
+            <tr>
+              <td>
+                <span class="fw-bold" style="letter-spacing:.08em;color:var(--em-700);font-family:monospace">
+                  {{ b.pickupCode }}
+                </span>
+              </td>
+              <td class="text-muted small">{{ getUserName(b) }}</td>
+              <td class="small text-muted">
+                @for (item of b.items; track $index) {
+                  <div>{{ item.name || 'Produit' }} × {{ item.quantity }}</div>
+                }
+              </td>
+              <td>
+                <span class="dash-badge dash-badge--slate">
+                  {{ b.type === 'collect' ? 'Retrait' : 'Essayage' }}
+                </span>
+              </td>
+              <td class="fw-semibold" style="color:var(--em-600)">
+                {{ getTotal(b) | number:'1.0-0' }} Ar
+              </td>
+              <td class="small text-muted">{{ b.expiresAt | date:'dd/MM HH:mm' }}</td>
+              <td>
+                <span class="dash-badge dash-badge--amber">
+                  <i class="bi bi-clock"></i> En attente
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="dash-pagination mt-3">
+        <button class="dash-page-btn" [disabled]="page===1" (click)="page=page-1">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        @for (p of pages; track p) {
+          <button class="dash-page-btn" [class.active]="p===page" (click)="page=p">{{ p }}</button>
+        }
+        <button class="dash-page-btn" [disabled]="page===totalPages" (click)="page=page+1">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    }
+  }
+
+  <!-- Historique complétées -->
+  @if (completed.length > 0) {
+    <h6 class="fw-bold mt-4 mb-2" style="color:var(--gray-700)">
+      Complétées récemment
+      <span class="dash-badge dash-badge--green ms-2">{{ completed.length }}</span>
+    </h6>
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr><th>Code</th><th>Client</th><th>Total</th><th>Date</th><th>Statut</th></tr>
+        </thead>
+        <tbody>
+          @for (b of completed.slice(0, 5); track b._id) {
+            <tr>
+              <td class="fw-bold" style="font-family:monospace;color:var(--gray-500)">{{ b.pickupCode }}</td>
+              <td class="text-muted small">{{ getUserName(b) }}</td>
+              <td style="color:var(--em-600)">{{ getTotal(b) | number:'1.0-0' }} Ar</td>
+              <td class="text-muted small">{{ b.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td><span class="dash-badge dash-badge--green"><i class="bi bi-check-circle"></i> Complétée</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

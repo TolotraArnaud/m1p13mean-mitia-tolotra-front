@@ -1,0 +1,92 @@
+<nav class="app-navbar">
+  <div class="app-navbar__inner">
+
+    <a class="app-navbar__brand" routerLink="/home" (click)="mobileMenuOpen=false">
+      <div class="brand-icon"><i class="bi bi-shop-window"></i></div>
+      <span>MarketPlace</span>
+    </a>
+
+    <ul class="app-navbar__links" [class.open]="mobileMenuOpen">
+      <li><a routerLink="/home" routerLinkActive="active" (click)="mobileMenuOpen=false">
+        <i class="bi bi-house"></i><span>Accueil</span>
+      </a></li>
+      <li><a routerLink="/shops" routerLinkActive="active" (click)="mobileMenuOpen=false">
+        <i class="bi bi-grid"></i><span>Boutiques</span>
+      </a></li>
+      <li><a routerLink="/products/search" routerLinkActive="active" (click)="mobileMenuOpen=false">
+        <i class="bi bi-search"></i><span>Produits</span>
+      </a></li>
+      @if (isLoggedIn) {
+        <li><a routerLink="/reservations" routerLinkActive="active" (click)="mobileMenuOpen=false">
+          <i class="bi bi-receipt"></i><span>Réservations</span>
+        </a></li>
+      }
+    </ul>
+
+    <div class="app-navbar__right">
+      @if (currentUser) {
+        @if (isAdmin) {
+          <a routerLink="/admin" class="nav-dash-link">
+            <i class="bi bi-shield-check"></i> Admin
+          </a>
+        } @else if (isBoutique) {
+          <a routerLink="/dashboard" class="nav-dash-link">
+            <i class="bi bi-bag"></i> Mon espace
+          </a>
+        }
+      }
+
+      <!-- Panier -->
+      <a routerLink="/cart" class="nav-cart-btn" title="Panier">
+        <i class="bi bi-basket"></i>
+        @if (cartCount > 0) {
+          <span class="cart-badge">{{ cartCount }}</span>
+        }
+      </a>
+
+      @if (currentUser) {
+        <button class="user-pill" (click)="toggleDropdown($event)">
+          <span class="user-pill__avatar">
+            {{ currentUser.prenom.charAt(0) }}{{ currentUser.nom.charAt(0) }}
+          </span>
+          <span class="user-pill__name">{{ currentUser.prenom }}</span>
+          <i class="bi" [class.bi-chevron-down]="!dropdownOpen" [class.bi-chevron-up]="dropdownOpen"></i>
+        </button>
+
+        @if (dropdownOpen) {
+          <div class="udp">
+            <div class="udp__header">
+              <div class="udp__avatar">
+                {{ currentUser.prenom.charAt(0) }}{{ currentUser.nom.charAt(0) }}
+              </div>
+              <div class="udp__info">
+                <div class="udp__name">{{ currentUser.prenom }} {{ currentUser.nom }}</div>
+                <div class="udp__email">{{ currentUser.email }}</div>
+                <span class="udp__role udp__role--{{ currentUser.role }}">
+                  {{ currentUser.role | titlecase }}
+                </span>
+              </div>
+            </div>
+            <div class="udp__divider"></div>
+            <button class="udp__logout" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i> Déconnexion
+            </button>
+          </div>
+        }
+
+      } @else {
+        <a routerLink="/login" class="nav-ghost-link" (click)="mobileMenuOpen=false">
+          <i class="bi bi-person"></i> Connexion
+        </a>
+        <a routerLink="/register" class="nav-cta" (click)="mobileMenuOpen=false">
+          S'inscrire
+        </a>
+      }
+
+      <button class="nav-burger" (click)="toggleMobileMenu()">
+        <i class="bi" [class.bi-list]="!mobileMenuOpen" [class.bi-x-lg]="mobileMenuOpen"></i>
+      </button>
+    </div>
+
+  </div>
+</nav>

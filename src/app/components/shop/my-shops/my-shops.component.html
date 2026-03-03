@@ -1,0 +1,381 @@
+<div class="dash-page">
+
+  @if (successMsg) { <div class="dash-alert dash-alert--success"><i class="bi bi-check-circle"></i> {{ successMsg }}</div> }
+  @if (errorMsg)   { <div class="dash-alert dash-alert--error"><i class="bi bi-exclamation-circle"></i> {{ errorMsg }}</div> }
+
+  <div class="dash-page__header">
+    <div>
+      <h1>Mes boutiques</h1>
+      <p>{{ myShops.length }} boutique(s) enregistrée(s)</p>
+    </div>
+    <button class="dash-btn dash-btn--primary" (click)="showCreateForm = !showCreateForm; editingShop = null">
+      <i class="bi bi-plus"></i> Nouvelle boutique
+    </button>
+  </div>
+
+  <!-- Création boutique -->
+  @if (showCreateForm) {
+    <div class="dash-form-card">
+      <h6 class="dash-form-card__title"><i class="bi bi-shop"></i> Créer une boutique</h6>
+      <form (ngSubmit)="createShop()" #shopForm="ngForm">
+        <div class="dash-form-row">
+          <div class="dash-field" style="flex:2">
+            <label>Nom *</label>
+            <input type="text" placeholder="Ma boutique" name="sNom" [(ngModel)]="newShop.nom" required />
+          </div>
+          <div class="dash-field">
+            <label>Catégorie *</label>
+            <select name="sCat" [(ngModel)]="newShop.categorieId" required>
+              <option value="">-- Choisir --</option>
+              @for (cat of categories; track cat._id) {
+                <option [value]="cat._id">{{ cat.nom }}</option>
+              }
+            </select>
+          </div>
+          <div class="dash-field" style="flex:3">
+            <label>Description</label>
+            <input type="text" name="sDesc" [(ngModel)]="newShop.description" />
+          </div>
+          <div class="dash-form-actions">
+            <button type="submit" class="dash-btn dash-btn--primary" [disabled]="shopForm.invalid">Créer</button>
+            <button type="button" class="dash-btn dash-btn--ghost" (click)="showCreateForm=false">Annuler</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Edition boutique -->
+  @if (editingShop) {
+    <div class="dash-form-card" style="border-left-color:var(--amber-500) !important">
+      <h6 class="dash-form-card__title" style="color:var(--amber-700)">
+        <i class="bi bi-pencil"></i> Modifier — {{ editingShop.nom }}
+      </h6>
+      <div class="dash-form-row">
+        <div class="dash-field" style="flex:2">
+          <label>Nom *</label>
+          <input type="text" [(ngModel)]="editShopForm.nom" required />
+        </div>
+        <div class="dash-field" style="flex:3">
+          <label>Description</label>
+          <input type="text" [(ngModel)]="editShopForm.description" />
+        </div>
+        <div class="dash-form-actions">
+          <button class="dash-btn dash-btn--primary" (click)="saveEditShop()" [disabled]="!editShopForm.nom">
+            <i class="bi bi-check"></i> Sauvegarder
+          </button>
+          <button class="dash-btn dash-btn--ghost" (click)="cancelEditShop()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="dash-loading"><div class="spinner-border text-primary"></div></div>
+  } @else if (myShops.length === 0) {
+    <div class="dash-empty-state"><i class="bi bi-shop-window"></i><span>Aucune boutique.</span></div>
+  } @else {
+
+    <!-- Grille boutiques -->
+    <div class="row g-3 mb-4">
+      @for (shop of myShops; track shop._id) {
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 hover-card"
+               [style.border-left]="selectedShop?._id===shop._id ? '3px solid var(--em-600)' : '3px solid transparent'"
+               style="cursor:pointer" (click)="selectShop(shop)">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="dash-table__initials" style="width:44px;height:44px;font-size:.85rem;flex-shrink:0">
+                  {{ shop.nom.substring(0,2).toUpperCase() }}
+                </div>
+                <div class="flex-grow-1 min-w-0">
+                  <div class="fw-bold text-truncate">{{ shop.nom }}</div>
+                  @if (getShopCategoryName(shop)) {
+                    <span class="dash-badge dash-badge--blue" style="font-size:.66rem">{{ getShopCategoryName(shop) }}</span>
+                  }
+                </div>
+                <button class="dash-btn dash-btn--sm dash-btn--outline" style="flex-shrink:0"
+                        (click)="startEditShop(shop, $event)" title="Modifier">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </div>
+              @if (shop.description) {
+                <p class="text-muted mb-1" style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                  {{ shop.description }}
+                </p>
+              }
+              <div class="d-flex align-items-center justify-content-between mt-2">
+                <span class="dash-badge" [ngClass]="shop.isActivated ? 'dash-badge--green' : 'dash-badge--amber'">
+                  <i class="bi" [class.bi-check-circle]="shop.isActivated" [class.bi-clock]="!shop.isActivated"></i>
+                  {{ shop.isActivated ? 'Active' : 'En attente validation' }}
+                </span>
+                <small class="text-muted" style="font-size:.72rem">Cliquer pour gérer</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Gestion produits -->
+    @if (selectedShop) {
+      <div class="dash-form-card" style="border-left-color:var(--em-700) !important">
+
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h6 class="dash-form-card__title mb-0" style="color:var(--em-700)">
+            <i class="bi bi-box-seam"></i> Produits — {{ selectedShop.nom }}
+            <span class="ms-2 text-muted fw-normal" style="font-size:.78rem">{{ shopProducts.length }} produit(s)</span>
+          </h6>
+          <button class="dash-btn dash-btn--success dash-btn--sm" (click)="showAddProduct=!showAddProduct; editingProduct=null">
+            <i class="bi bi-plus"></i> Ajouter
+          </button>
+        </div>
+
+        <!-- Stats mini -->
+        @if (shopStats) {
+          <div class="d-flex gap-2 mb-3 flex-wrap">
+            <div class="px-3 py-2 rounded-3" style="background:var(--gray-100)">
+              <span class="fw-bold" style="color:var(--em-600)">{{ shopStats.totalProduits||0 }}</span>
+              <span class="text-muted small ms-1">produits</span>
+            </div>
+            <div class="px-3 py-2 rounded-3" style="background:var(--gray-100)">
+              <span class="fw-bold text-success">{{ shopStats.valeurTotaleStock | number:'1.0-0' }} Ar</span>
+              <span class="text-muted small ms-1">stock</span>
+            </div>
+            <div class="px-3 py-2 rounded-3" style="background:var(--gray-100)">
+              <span class="fw-bold text-danger">{{ shopStats.ruptures||0 }}</span>
+              <span class="text-muted small ms-1">ruptures</span>
+            </div>
+          </div>
+        }
+
+        <!-- Formulaire ajout produit -->
+        @if (showAddProduct) {
+          <div class="p-3 mb-3 rounded-3" style="background:var(--gray-50);border:1px solid var(--border)">
+            <div class="fw-semibold small mb-3"><i class="bi bi-plus-circle me-1" style="color:var(--em-600)"></i>Nouveau produit</div>
+            <form (ngSubmit)="addProduct()" #productForm="ngForm">
+              <div class="dash-form-row">
+                <div class="dash-field" style="flex:2">
+                  <label>Nom *</label>
+                  <input type="text" name="pNom" [(ngModel)]="newProduct.nom" required placeholder="Nom du produit" />
+                </div>
+                <div class="dash-field">
+                  <label>Prix (Ar) *</label>
+                  <input type="number" name="pPrix" [(ngModel)]="newProduct.prix" min="0" required />
+                </div>
+                <div class="dash-field">
+                  <label>Poids (kg)</label>
+                  <input type="number" name="pPoid" [(ngModel)]="newProduct.poid" min="0" />
+                </div>
+                <div class="dash-field" style="flex:2">
+                  <label>Description</label>
+                  <input type="text" name="pDesc" [(ngModel)]="newProduct.description" />
+                </div>
+              </div>
+              <div class="dash-form-row mt-2">
+                <!-- isStockable toggle -->
+                <div class="dash-field">
+                  <label>Type de gestion</label>
+                  <select name="pStockable" [(ngModel)]="newProduct.isStockable">
+                    <option [ngValue]="true">Avec stock (physique)</option>
+                    <option [ngValue]="false">Sans stock (service/pizza)</option>
+                  </select>
+                </div>
+                @if (newProduct.isStockable) {
+                  <div class="dash-field">
+                    <label>Stock initial</label>
+                    <input type="number" name="pStock" [(ngModel)]="newProduct.stock" min="0" />
+                  </div>
+                }
+                <div class="dash-field">
+                  <label>Image</label>
+                  <input type="file" accept="image/*" (change)="onFileChange($event)" style="font-size:.8rem" />
+                </div>
+                <div class="dash-form-actions">
+                  <button type="submit" class="dash-btn dash-btn--success" [disabled]="productForm.invalid">Ajouter</button>
+                  <button type="button" class="dash-btn dash-btn--ghost" (click)="showAddProduct=false">✕</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- Edition produit inline -->
+        @if (editingProduct) {
+          <div class="p-3 mb-3 rounded-3" style="background:#fffbeb;border:1px solid var(--amber-500)">
+            <div class="fw-semibold small mb-2" style="color:var(--amber-700)">
+              <i class="bi bi-pencil me-1"></i>Modifier — {{ editingProduct.nom }}
+            </div>
+            <div class="dash-form-row">
+              <div class="dash-field" style="flex:2">
+                <label>Nom</label>
+                <input type="text" [(ngModel)]="editProductForm.nom" />
+              </div>
+              <div class="dash-field">
+                <label>Prix (Ar)</label>
+                <input type="number" [(ngModel)]="editProductForm.prix" min="0" />
+              </div>
+              <div class="dash-field">
+                <label>Promo (%)</label>
+                <input type="number" [(ngModel)]="editProductForm.promo" min="0" max="100" />
+              </div>
+              <div class="dash-field">
+                <label>Poids (kg)</label>
+                <input type="number" [(ngModel)]="editProductForm.poid" min="0" />
+              </div>
+              <div class="dash-field" style="flex:2">
+                <label>Description</label>
+                <input type="text" [(ngModel)]="editProductForm.description" />
+              </div>
+              <!-- Stock si stockable -->
+              <div class="dash-field">
+                <label>Type gestion</label>
+                <select [(ngModel)]="editProductForm.isStockable">
+                  <option [ngValue]="true">Avec stock</option>
+                  <option [ngValue]="false">Sans stock</option>
+                </select>
+              </div>
+              @if (editProductForm.isStockable) {
+                <div class="dash-field">
+                  <label>Stock</label>
+                  <input type="number" [(ngModel)]="editProductForm.stock" min="0" />
+                </div>
+              }
+              <!-- Disponibilité manuelle si non stockable -->
+              @if (!editProductForm.isStockable) {
+                <div class="dash-field">
+                  <label>Disponibilité</label>
+                  <select [(ngModel)]="editProductForm.manualAvailability">
+                    <option [ngValue]="true">Disponible</option>
+                    <option [ngValue]="false">Indisponible</option>
+                  </select>
+                </div>
+              }
+              <div class="dash-field">
+                <label>Nouvelle image</label>
+                <input type="file" accept="image/*" (change)="onEditProductFile($event)" style="font-size:.8rem" />
+              </div>
+              <div class="dash-form-actions">
+                <button class="dash-btn dash-btn--primary" (click)="saveEditProduct()">
+                  <i class="bi bi-check"></i> Sauvegarder
+                </button>
+                <button class="dash-btn dash-btn--ghost" (click)="cancelEditProduct()">Annuler</button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Table produits -->
+        @if (productLoading) {
+          <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>
+        } @else if (shopProducts.length === 0) {
+          <div class="text-center text-muted py-3 small"><i class="bi bi-box d-block mb-1 fs-4 opacity-25"></i>Aucun produit.</div>
+        } @else {
+          <div class="dash-table-wrap">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Prix</th>
+                  <th>Stock / Type</th>
+                  <th>Dispo</th>
+                  <th>Promo</th>
+                  <th class="text-end" style="padding-right:1rem">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of pagedProducts; track p._id) {
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        @if (p.image) {
+                          <img [src]="p.image" [alt]="p.nom" style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0" />
+                        } @else {
+                          <div style="width:36px;height:36px;background:var(--gray-100);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i class="bi bi-image text-muted" style="font-size:.8rem"></i>
+                          </div>
+                        }
+                        <div class="fw-semibold" style="font-size:.875rem">{{ p.nom }}</div>
+                      </div>
+                    </td>
+                    <td class="fw-semibold" style="color:var(--em-600)">{{ p.prix | number:'1.0-0' }} Ar</td>
+
+                    <!-- Stock ou service -->
+                    <td>
+                      @if (p.isStockable) {
+                        @if (stockEditId === p._id) {
+                          <div class="d-flex align-items-center gap-1">
+                            <input type="number" [(ngModel)]="stockEditValue" min="0"
+                                   style="width:60px;padding:.2rem .4rem;border:1px solid var(--border);border-radius:5px;font-size:.82rem" />
+                            <button class="dash-btn dash-btn--sm dash-btn--success" (click)="saveStock(p)" style="padding:.2rem .5rem">
+                              <i class="bi bi-check"></i>
+                            </button>
+                            <button class="dash-btn dash-btn--sm dash-btn--ghost" (click)="stockEditId=null" style="padding:.2rem .5rem">
+                              <i class="bi bi-x"></i>
+                            </button>
+                          </div>
+                        } @else {
+                          <span [class]="(p.stock??0)===0 ? 'text-danger fw-semibold' : 'text-success'">
+                            {{ (p.stock??0)===0 ? 'Rupture' : p.stock+' en stock' }}
+                          </span>
+                          <button class="dash-btn dash-btn--sm dash-btn--ghost ms-1" (click)="startStockEdit(p)"
+                                  style="padding:.15rem .4rem;font-size:.72rem" title="Modifier stock">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                        }
+                      } @else {
+                        <span class="dash-badge dash-badge--slate">Service</span>
+                      }
+                    </td>
+
+                    <!-- Toggle disponibilité -->
+                    <td>
+                      @if (!p.isStockable) {
+                        <button class="dash-btn dash-btn--sm"
+                                [ngClass]="p.manualAvailability ? 'dash-btn--success' : 'dash-btn--danger-outline'"
+                                (click)="toggleAvailability(p)"
+                                style="min-width:90px">
+                          <i class="bi" [class.bi-check-circle]="p.manualAvailability" [class.bi-x-circle]="!p.manualAvailability"></i>
+                          {{ p.manualAvailability ? 'Dispo' : 'Indispo' }}
+                        </button>
+                      } @else {
+                        <span class="text-muted small">Auto</span>
+                      }
+                    </td>
+
+                    <td>{{ p.promo ? p.promo+'%' : '—' }}</td>
+
+                    <td class="text-end" style="padding-right:.75rem">
+                      <div class="dash-action-group">
+                        <button class="dash-btn dash-btn--sm dash-btn--outline" (click)="startEditProduct(p)" title="Modifier">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="dash-btn dash-btn--sm dash-btn--danger-outline" (click)="deleteProduct(p)" title="Supprimer">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (prodTotalPages > 1) {
+            <div class="dash-pagination mt-3">
+              <button class="dash-page-btn" [disabled]="prodPage===1" (click)="prodPage=prodPage-1">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              @for (p of prodPages; track p) {
+                <button class="dash-page-btn" [class.active]="p===prodPage" (click)="prodPage=p">{{ p }}</button>
+              }
+              <button class="dash-page-btn" [disabled]="prodPage===prodTotalPages" (click)="prodPage=prodPage+1">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          }
+        }
+      </div>
+    }
+  }
+</div>

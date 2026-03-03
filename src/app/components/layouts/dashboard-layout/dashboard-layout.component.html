@@ -1,0 +1,92 @@
+<div class="dash-wrapper">
+
+  <header class="dash-topbar">
+    <div class="dash-topbar__left">
+      <a class="dash-topbar__brand" routerLink="/">
+        <div class="brand-icon"><i class="bi bi-shop-window"></i></div>
+        <span>MarketPlace</span>
+      </a>
+      <span class="dash-topbar__sep"></span>
+      <span class="dash-topbar__context">
+        @if (isAdmin) { <i class="bi bi-shield-check me-1"></i>Administration }
+        @else { <i class="bi bi-bag me-1"></i>Espace commerçant }
+      </span>
+    </div>
+
+    <div class="dash-topbar__right">
+      <a routerLink="/home" class="dash-topbar__pub-link">
+        <i class="bi bi-arrow-left me-1"></i>Site public
+      </a>
+      @if (currentUser) {
+        <div class="dash-topbar__user">
+          <div class="dash-topbar__avatar">
+            {{ currentUser.prenom.charAt(0) }}{{ currentUser.nom.charAt(0) }}
+          </div>
+          <div class="dash-topbar__uinfo">
+            <span class="dash-topbar__uname">{{ currentUser.prenom }} {{ currentUser.nom }}</span>
+            <span class="dash-topbar__urole role--{{ currentUser.role }}">{{ currentUser.role | titlecase }}</span>
+          </div>
+          <button class="dash-topbar__logout" (click)="logout()" title="Déconnexion">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </div>
+      }
+    </div>
+  </header>
+
+  <div class="dash-body">
+    <aside class="dash-sidebar">
+
+      @if (isAdmin) {
+        <div class="dash-nav-group">
+          <div class="dash-nav-label">Vue générale</div>
+          <a class="dash-nav-link" routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+            <i class="bi bi-speedometer2"></i> Tableau de bord
+          </a>
+        </div>
+        <div class="dash-nav-group">
+          <div class="dash-nav-label">Gestion</div>
+          <a class="dash-nav-link" routerLink="/admin/shops" routerLinkActive="active">
+            <i class="bi bi-shop"></i> Boutiques
+          </a>
+          <a class="dash-nav-link" routerLink="/admin/categories" routerLinkActive="active">
+            <i class="bi bi-tags"></i> Catégories
+          </a>
+          <a class="dash-nav-link" routerLink="/admin/users" routerLinkActive="active">
+            <i class="bi bi-people"></i> Utilisateurs
+          </a>
+        </div>
+      }
+
+      @if (isBoutique) {
+        <div class="dash-nav-group">
+          <div class="dash-nav-label">Mes boutiques</div>
+          <a class="dash-nav-link" routerLink="/dashboard/my-shops" routerLinkActive="active">
+            <i class="bi bi-shop"></i> Mes boutiques
+          </a>
+          <a class="dash-nav-link" routerLink="/dashboard/bookings" routerLinkActive="active">
+            <i class="bi bi-receipt"></i> Réservations
+          </a>
+        </div>
+      }
+
+      <div class="dash-nav-group dash-nav-group--bottom">
+        <div class="dash-nav-label">Navigation</div>
+        <a class="dash-nav-link" routerLink="/shops">
+          <i class="bi bi-grid"></i> Boutiques publiques
+        </a>
+        <a class="dash-nav-link" routerLink="/products/search">
+          <i class="bi bi-search"></i> Produits
+        </a>
+      </div>
+
+    </aside>
+
+    <div class="dash-content-wrapper">
+      <main class="dash-content">
+        <router-outlet></router-outlet>
+      </main>
+      <app-footer></app-footer>
+    </div>
+  </div>
+</div>
